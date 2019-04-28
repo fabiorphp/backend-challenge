@@ -55,3 +55,33 @@ Examples:
 - Be easy to grow and easy to add new functionality.
 - Have notes attached, explaining the solution and why certain things are included and others are left out.
 - If submitted as a compressed package, its size must not exceed 20MB.
+
+## Development
+
+### Requirements
+
+- Install [Go](https://golang.org)
+
+### Makefile
+```sh
+// Build a beta version of app
+$ make build
+
+// Clean up
+$ make clean
+
+// Creates folders
+$ make configure
+
+//Run tests and generates html coverage file
+make cover
+
+// Format all go files
+make fmt
+
+//Run linters
+make lint
+
+// Run tests
+make test
+```
