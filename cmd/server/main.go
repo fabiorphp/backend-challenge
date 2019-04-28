@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/fabiorphp/backend-challenge/pkg/handler"
 	"log"
 	"net/http"
 )
@@ -15,6 +16,8 @@ func main() {
 
 	log.Printf("%s service - %s", appName, version)
 	log.Printf("starting server on %s", address)
+
+	http.HandleFunc("/health", handler.Health)
 
 	err := http.ListenAndServe(address, nil)
 
