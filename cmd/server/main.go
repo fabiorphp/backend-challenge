@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"github.com/fabiorphp/backend-challenge/pkg/handler"
 	"github.com/fabiorphp/backend-challenge/pkg/storage"
 	"github.com/gorilla/mux"
@@ -9,12 +10,17 @@ import (
 )
 
 var (
-	address = "localhost:9000"
+	address string
 	appName = "basket"
 	version = "0.0.0"
 )
 
+func init() {
+	flag.StringVar(&address, "listen", "localhost:9000", "Address and port on which App will accept HTTP requests")
+}
+
 func main() {
+	flag.Parse()
 
 	log.Printf("%s service - %s", appName, version)
 	log.Printf("starting server on %s", address)
