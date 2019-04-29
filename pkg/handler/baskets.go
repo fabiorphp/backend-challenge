@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"github.com/fabiorphp/backend-challenge/pkg/basket"
+	"github.com/fabiorphp/backend-challenge/pkg/product"
 	"github.com/fabiorphp/backend-challenge/pkg/render"
 	"github.com/fabiorphp/backend-challenge/pkg/storage"
 	"github.com/gorilla/mux"
@@ -12,26 +13,13 @@ import (
 
 type (
 	Baskets struct {
-		store storage.Storage
+		store       storage.Storage
+		productRepo product.Repo
 	}
 )
 
-var (
-	products map[string]basket.Item = map[string]basket.Item{
-		"VOUCHER": {
-			"VOUCHER", "Cabify Voucher", 5.00,
-		},
-		"TSHIRT": {
-			"TSHIRT", "Cabify T-Shirt", 20.00,
-		},
-		"MUG": {
-			"MUG", "Cabify Coffee Mug", 7.50,
-		},
-	}
-)
-
-func NewBaskets(store storage.Storage) *Baskets {
-	return &Baskets{store}
+func NewBaskets(store storage.Storage, productRepo product.Repo) *Baskets {
+	return &Baskets{store, productRepo}
 }
 
 func (b *Baskets) Create(w http.ResponseWriter, r *http.Request) {
@@ -64,10 +52,10 @@ func (b *Baskets) AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product, ok := products[item.Code]
+	product, err := b.productRepo.GetByCode(item.Code)
 
-	if !ok {
-		Error(w, http.StatusBadRequest, "product not found")
+	if err != nil {
+		Error(w, http.StatusBadRequest, err.Error())
 
 		return
 	}

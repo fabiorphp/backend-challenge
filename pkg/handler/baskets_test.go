@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/fabiorphp/backend-challenge/pkg/basket"
+	"github.com/fabiorphp/backend-challenge/pkg/product"
 	"github.com/fabiorphp/backend-challenge/pkg/storage"
 	"net/http"
 	"net/http/httptest"
@@ -11,7 +12,8 @@ import (
 )
 
 var (
-	basketsHandler = NewBaskets(storage.NewMemory())
+	productRepo    = product.NewRepo()
+	basketsHandler = NewBaskets(storage.NewMemory(), productRepo)
 )
 
 type (
@@ -112,7 +114,7 @@ func TestBasketsAddItemHanderWithInvalidRequest(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	basketsHandler := NewBaskets(new(StorageMock))
+	basketsHandler := NewBaskets(new(StorageMock), productRepo)
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
 
@@ -136,7 +138,7 @@ func TestBasketsAddItemHandlerWithInvalidProduct(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	basketsHandler := NewBaskets(new(StorageMock))
+	basketsHandler := NewBaskets(new(StorageMock), productRepo)
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
 
@@ -161,7 +163,7 @@ func TestBasketsAddItemHandler(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	store := &StorageMock{basket.NewBasket()}
-	basketsHandler := NewBaskets(store)
+	basketsHandler := NewBaskets(store, productRepo)
 
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
@@ -210,7 +212,7 @@ func TestBasketsAmountHandler(t *testing.T) {
 	bkt.Items = append(bkt.Items, item)
 
 	store := &StorageMock{bkt}
-	basketsHandler := NewBaskets(store)
+	basketsHandler := NewBaskets(store, productRepo)
 
 	handler := http.HandlerFunc(basketsHandler.Amount)
 	handler.ServeHTTP(rec, req)
