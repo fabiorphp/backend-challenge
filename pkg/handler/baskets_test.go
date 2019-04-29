@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
+	"github.com/fabiorphp/backend-challenge/pkg/basket"
 	"github.com/fabiorphp/backend-challenge/pkg/storage"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +13,20 @@ import (
 var (
 	basketsHandler = NewBaskets(storage.NewMemory())
 )
+
+type (
+	StorageMock struct {
+		basket interface{}
+	}
+)
+
+func (s *StorageMock) Delete(key string) {}
+
+func (s *StorageMock) Fetch(key string) (interface{}, error) {
+	return s.basket, nil
+}
+
+func (s *StorageMock) Save(key string, value interface{}) {}
 
 func TestBasketsCreateHandler(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, "/baskets", nil)
@@ -28,7 +44,7 @@ func TestBasketsCreateHandler(t *testing.T) {
 		t.Errorf(
 			"handler returned invalid status code: got %v want %v",
 			status,
-			http.StatusOK,
+			http.StatusCreated,
 		)
 	}
 
@@ -59,7 +75,102 @@ func TestBasketsDeleteHandler(t *testing.T) {
 		t.Errorf(
 			"handler returned invalid status code: got %v want %v",
 			status,
-			http.StatusOK,
+			http.StatusNoContent,
+		)
+	}
+}
+
+func TestBasketsAddItemHanderWhenBasketNotFound(t *testing.T) {
+	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", nil)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	rec := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(basketsHandler.AddItem)
+	handler.ServeHTTP(rec, req)
+
+	if status := rec.Code; status != http.StatusNotFound {
+		t.Errorf(
+			"handler returned invalid status code: got %v want %v",
+			status,
+			http.StatusNotFound,
+		)
+	}
+}
+
+func TestBasketsAddItemHanderWithInvalidRequest(t *testing.T) {
+	buf := bytes.NewBufferString(`{"code":"}`)
+
+	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", buf)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	rec := httptest.NewRecorder()
+
+	basketsHandler = NewBaskets(new(StorageMock))
+	handler := http.HandlerFunc(basketsHandler.AddItem)
+	handler.ServeHTTP(rec, req)
+
+	if status := rec.Code; status != http.StatusBadRequest {
+		t.Errorf(
+			"handler returned invalid status code: got %v want %v",
+			status,
+			http.StatusBadRequest,
+		)
+	}
+}
+
+func TestBasketsAddItemHanderWithInvalidProduct(t *testing.T) {
+	buf := bytes.NewBufferString(`{"code":"SHOES"}`)
+
+	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", buf)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	rec := httptest.NewRecorder()
+
+	basketsHandler = NewBaskets(new(StorageMock))
+	handler := http.HandlerFunc(basketsHandler.AddItem)
+	handler.ServeHTTP(rec, req)
+
+	if status := rec.Code; status != http.StatusBadRequest {
+		t.Errorf(
+			"handler returned invalid status code: got %v want %v",
+			status,
+			http.StatusBadRequest,
+		)
+	}
+}
+
+func TestBasketsAddItemHander(t *testing.T) {
+	buf := bytes.NewBufferString(`{"code":"MUG"}`)
+
+	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", buf)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	rec := httptest.NewRecorder()
+
+	store := &StorageMock{basket.NewBasket()}
+	basketsHandler = NewBaskets(store)
+
+	handler := http.HandlerFunc(basketsHandler.AddItem)
+	handler.ServeHTTP(rec, req)
+
+	if status := rec.Code; status != http.StatusCreated {
+		t.Errorf(
+			"handler returned invalid status code: got %v want %v",
+			status,
+			http.StatusCreated,
 		)
 	}
 }
