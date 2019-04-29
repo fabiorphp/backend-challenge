@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"github.com/fabiorphp/backend-challenge/pkg/basket"
 	"github.com/fabiorphp/backend-challenge/pkg/handler"
 	"github.com/fabiorphp/backend-challenge/pkg/product"
 	"github.com/fabiorphp/backend-challenge/pkg/storage"
@@ -26,7 +27,17 @@ func main() {
 	log.Printf("%s service - %s", appName, version)
 	log.Printf("starting server on %s", address)
 
-	basketsHandler := handler.NewBaskets(storage.NewMemory(), product.NewRepo())
+	productRepo := product.NewRepo()
+
+	basketsHandler := handler.NewBaskets(
+		storage.NewMemory(),
+		productRepo,
+		basket.NewCalculator(
+			basket.Sum,
+			basket.BuyTwoGetOneFree(productRepo, "VOUCHER"),
+			basket.BulkDiscount(productRepo, "TSHIRT", 19.0),
+		),
+	)
 
 	router := mux.NewRouter()
 	router.HandleFunc("/health", handler.Health).Methods(http.MethodGet)

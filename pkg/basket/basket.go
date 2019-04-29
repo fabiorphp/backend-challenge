@@ -22,3 +22,7 @@ func NewBasket() *Basket {
 		ID: time.Now().Unix(),
 	}
 }
+
+func (b *Basket) AddItem(item Item) {
+	b.Items = append(b.Items, item)
+}

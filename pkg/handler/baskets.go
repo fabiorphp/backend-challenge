@@ -15,11 +15,12 @@ type (
 	Baskets struct {
 		store       storage.Storage
 		productRepo product.Repo
+		calc        basket.Calculator
 	}
 )
 
-func NewBaskets(store storage.Storage, productRepo product.Repo) *Baskets {
-	return &Baskets{store, productRepo}
+func NewBaskets(store storage.Storage, productRepo product.Repo, calc basket.Calculator) *Baskets {
+	return &Baskets{store, productRepo, calc}
 }
 
 func (b *Baskets) Create(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +65,7 @@ func (b *Baskets) AddItem(w http.ResponseWriter, r *http.Request) {
 	item.Price = product.Price
 
 	bkt := data.(*basket.Basket)
-	bkt.Items = append(bkt.Items, item)
+	bkt.AddItem(item)
 
 	render.JSON(w, http.StatusCreated, bkt)
 }
@@ -80,11 +81,7 @@ func (b *Baskets) Amount(w http.ResponseWriter, r *http.Request) {
 
 	bkt := data.(*basket.Basket)
 
-	var amount float64
-
-	for _, i := range bkt.Items {
-		amount = amount + i.Price
-	}
+	amount := b.calc.Calculate(bkt)
 
 	payload := map[string]float64{"amount": amount}
 

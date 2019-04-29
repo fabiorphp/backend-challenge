@@ -13,7 +13,8 @@ import (
 
 var (
 	productRepo    = product.NewRepo()
-	basketsHandler = NewBaskets(storage.NewMemory(), productRepo)
+	calc           = basket.NewCalculator()
+	basketsHandler = NewBaskets(storage.NewMemory(), productRepo, calc)
 )
 
 type (
@@ -114,7 +115,7 @@ func TestBasketsAddItemHanderWithInvalidRequest(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	basketsHandler := NewBaskets(new(StorageMock), productRepo)
+	basketsHandler := NewBaskets(new(StorageMock), productRepo, calc)
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
 
@@ -138,7 +139,7 @@ func TestBasketsAddItemHandlerWithInvalidProduct(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	basketsHandler := NewBaskets(new(StorageMock), productRepo)
+	basketsHandler := NewBaskets(new(StorageMock), productRepo, calc)
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
 
@@ -163,7 +164,7 @@ func TestBasketsAddItemHandler(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	store := &StorageMock{basket.NewBasket()}
-	basketsHandler := NewBaskets(store, productRepo)
+	basketsHandler := NewBaskets(store, productRepo, calc)
 
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
@@ -209,10 +210,10 @@ func TestBasketsAmountHandler(t *testing.T) {
 
 	item := basket.Item{"MUG", "Cabify Coffee Mug", 7.50}
 	bkt := basket.NewBasket()
-	bkt.Items = append(bkt.Items, item)
+	bkt.AddItem(item)
 
 	store := &StorageMock{bkt}
-	basketsHandler := NewBaskets(store, productRepo)
+	basketsHandler := NewBaskets(store, productRepo, basket.NewCalculator(basket.Sum))
 
 	handler := http.HandlerFunc(basketsHandler.Amount)
 	handler.ServeHTTP(rec, req)
@@ -223,5 +224,15 @@ func TestBasketsAmountHandler(t *testing.T) {
 			status,
 			http.StatusOK,
 		)
+	}
+
+	res := make(map[string]float64)
+
+	if err := json.NewDecoder(rec.Body).Decode(&res); err != nil {
+		t.Fail()
+	}
+
+	if res["amount"] != 7.50 {
+		t.Error("wrong amount value")
 	}
 }
