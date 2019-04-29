@@ -26,6 +26,7 @@ func main() {
 	router.HandleFunc("/baskets", basketsHandler.Create).Methods(http.MethodPost)
 	router.HandleFunc("/baskets/{id}", basketsHandler.Delete).Methods(http.MethodDelete)
 	router.HandleFunc("/baskets/{id}/items", basketsHandler.AddItem).Methods(http.MethodPost)
+	router.HandleFunc("/baskets/{id}/amount", basketsHandler.Amount).Methods(http.MethodGet)
 
 	err := http.ListenAndServe(address, router)
 

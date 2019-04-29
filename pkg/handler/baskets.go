@@ -80,3 +80,25 @@ func (b *Baskets) AddItem(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, http.StatusCreated, bkt)
 }
+
+func (b *Baskets) Amount(w http.ResponseWriter, r *http.Request) {
+	data, err := b.store.Fetch(mux.Vars(r)["id"])
+
+	if err != nil {
+		Error(w, http.StatusNotFound, "basket not found")
+
+		return
+	}
+
+	bkt := data.(*basket.Basket)
+
+	var amount float64
+
+	for _, i := range bkt.Items {
+		amount = amount + i.Price
+	}
+
+	payload := map[string]float64{"amount": amount}
+
+	render.JSON(w, http.StatusOK, payload)
+}

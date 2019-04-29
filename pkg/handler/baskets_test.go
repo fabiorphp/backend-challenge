@@ -80,7 +80,7 @@ func TestBasketsDeleteHandler(t *testing.T) {
 	}
 }
 
-func TestBasketsAddItemHanderWhenBasketNotFound(t *testing.T) {
+func TestBasketsAddItemHandlerWhenBasketNotFound(t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", nil)
 
 	if err != nil {
@@ -112,7 +112,7 @@ func TestBasketsAddItemHanderWithInvalidRequest(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	basketsHandler = NewBaskets(new(StorageMock))
+	basketsHandler := NewBaskets(new(StorageMock))
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
 
@@ -125,7 +125,7 @@ func TestBasketsAddItemHanderWithInvalidRequest(t *testing.T) {
 	}
 }
 
-func TestBasketsAddItemHanderWithInvalidProduct(t *testing.T) {
+func TestBasketsAddItemHandlerWithInvalidProduct(t *testing.T) {
 	buf := bytes.NewBufferString(`{"code":"SHOES"}`)
 
 	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", buf)
@@ -136,7 +136,7 @@ func TestBasketsAddItemHanderWithInvalidProduct(t *testing.T) {
 
 	rec := httptest.NewRecorder()
 
-	basketsHandler = NewBaskets(new(StorageMock))
+	basketsHandler := NewBaskets(new(StorageMock))
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
 
@@ -149,7 +149,7 @@ func TestBasketsAddItemHanderWithInvalidProduct(t *testing.T) {
 	}
 }
 
-func TestBasketsAddItemHander(t *testing.T) {
+func TestBasketsAddItemHandler(t *testing.T) {
 	buf := bytes.NewBufferString(`{"code":"MUG"}`)
 
 	req, err := http.NewRequest(http.MethodPost, "/baskets/1/items", buf)
@@ -161,7 +161,7 @@ func TestBasketsAddItemHander(t *testing.T) {
 	rec := httptest.NewRecorder()
 
 	store := &StorageMock{basket.NewBasket()}
-	basketsHandler = NewBaskets(store)
+	basketsHandler := NewBaskets(store)
 
 	handler := http.HandlerFunc(basketsHandler.AddItem)
 	handler.ServeHTTP(rec, req)
@@ -171,6 +171,55 @@ func TestBasketsAddItemHander(t *testing.T) {
 			"handler returned invalid status code: got %v want %v",
 			status,
 			http.StatusCreated,
+		)
+	}
+}
+
+func TestBasketsAmountHandlerWhenBasketNotFound(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, "/baskets/1/amount", nil)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	rec := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(basketsHandler.Amount)
+	handler.ServeHTTP(rec, req)
+
+	if status := rec.Code; status != http.StatusNotFound {
+		t.Errorf(
+			"handler returned invalid status code: got %v want %v",
+			status,
+			http.StatusNotFound,
+		)
+	}
+}
+
+func TestBasketsAmountHandler(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, "/baskets/1/amount", nil)
+
+	if err != nil {
+		t.Fail()
+	}
+
+	rec := httptest.NewRecorder()
+
+	item := basket.Item{"MUG", "Cabify Coffee Mug", 7.50}
+	bkt := basket.NewBasket()
+	bkt.Items = append(bkt.Items, item)
+
+	store := &StorageMock{bkt}
+	basketsHandler := NewBaskets(store)
+
+	handler := http.HandlerFunc(basketsHandler.Amount)
+	handler.ServeHTTP(rec, req)
+
+	if status := rec.Code; status != http.StatusOK {
+		t.Errorf(
+			"handler returned invalid status code: got %v want %v",
+			status,
+			http.StatusOK,
 		)
 	}
 }
