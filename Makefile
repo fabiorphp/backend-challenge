@@ -1,5 +1,6 @@
 APP_NAME=basket
 APP_VERSION=0.0.1
+LDFLAGS=--ldflags '-X main.version=${APP_VERSION} -X main.appName=${APP_NAME} -extldflags "-static" -w -s'
 NO_VENDOR=$(shell go list ./... | grep -v /vendor/)
 OS=linux
 #
@@ -7,8 +8,7 @@ OS=linux
 
 # Build app
 build:
-	CGO_ENABLED=0 GOOS=${OS} go build -v -a -tags netgo -installsuffix netgo \
-	--ldflags '-X main.version=${APP_VERSION} -X main.appName=${APP_NAME} -extldflags "-static" -w -s' \
+	CGO_ENABLED=0 GOOS=${OS} go build -v -a ${LDFLAGS} -tags netgo -installsuffix netgo \
     -o ./build/${APP_NAME} github.com/fabiorphp/backend-challenge/cmd/basket/
 .PHONY: build
 

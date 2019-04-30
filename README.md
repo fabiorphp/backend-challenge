@@ -1,6 +1,75 @@
+# Basket
+Basket is a small app for managing checkout baskets.
+
+## Requirements
+App requires Golang 1.11 or later.
+
+## Installation
+- Install [Golang](https://golang.org/doc/install)
+
+## Build
+For building binaries please use make, look at the commands bellow:
+
+```
+// Build the binary in your environment.
+$ make build
+
+// Build with another OS. Default Linux
+$ make OS=darwin build
+
+// Build with custom version.
+$ make APP_VERSION=0.1.0 build
+
+// Build with custom app name.
+$ make APP_NAME=basket build
+
+// Passing all flags.
+$ make OS=darwin APP_NAME=basket APP_VERSION=0.1.0 build
+
+// Clean Up.
+$ make clean
+
+// Create the required folders.
+$ make configure
+```
+
+## Develpoment
+```
+// Running tests
+$ make test
+
+// Running tests with coverage. Output coverage file: coverage.html
+$ make cover
+
+// Run the application without build
+$ go run ./cmd/basket/main.go
+```
+
+## Running
+After build the application the should follow the steps bellow for running.
+```sh
+$ make
+$ ./build/basket agent # Running the agent server
+
+# In another terminal
+
+# Execute the app binary to create a basket
+$ ./build/basket create
+
+# Add product into basket. (Products code: VOUCHER, TSHIRT and MUG)
+$ ./build/basket add <BASKET_ID> VOUCHER
+
+# Get the amount
+$ ./build/basket amount <BASKET_ID>
+
+# Delete basket
+$ ./build/basket delete <BASKET_ID>
+```
+
+## Challenge instructions
 Besides providing exceptional transportation services, Cabify also runs a physical store which sells 3 products:
 
-``` 
+```
 Code         | Name                |  Price
 -------------------------------------------------
 VOUCHER      | Cabify Voucher      |   5.00€
@@ -55,33 +124,3 @@ Examples:
 - Be easy to grow and easy to add new functionality.
 - Have notes attached, explaining the solution and why certain things are included and others are left out.
 - If submitted as a compressed package, its size must not exceed 20MB.
-
-## Development
-
-### Requirements
-
-- Install [Go](https://golang.org)
-
-### Makefile
-```sh
-// Build a beta version of app
-$ make build
-
-// Clean up
-$ make clean
-
-// Creates folders
-$ make configure
-
-//Run tests and generates html coverage file
-make cover
-
-// Format all go files
-make fmt
-
-//Run linters
-make lint
-
-// Run tests
-make test
-```
