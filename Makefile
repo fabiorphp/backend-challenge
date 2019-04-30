@@ -6,14 +6,11 @@ OS=linux
 .DEFAULT_GOAL := build
 
 # Build app
-build: build-server
-.PHONY: build
-
-build-server:
+build:
 	CGO_ENABLED=0 GOOS=${OS} go build -v -a -tags netgo -installsuffix netgo \
 	--ldflags '-X main.version=${APP_VERSION} -X main.appName=${APP_NAME} -extldflags "-static" -w -s' \
-    -o ./build/${APP_NAME}-server github.com/fabiorphp/backend-challenge/cmd/server/
-.PHONY: build-server
+    -o ./build/${APP_NAME} github.com/fabiorphp/backend-challenge/cmd/basket/
+.PHONY: build
 
 # Clean up
 clean:
